@@ -69,8 +69,14 @@ void loop() {
   // Once we haven't seen new maximums for this many seconds, give up finding more gears
   // Servo likely hit physical max angle
   const float MAX_TIMEOUT_THRESHOLD_SECONDS = 2.0f;
+
+  // Max number of gears our program will store
+  const int GEAR_ANGLE_ARR_MAX = 15;
   
   Serial.println("Starting calibration...");
+
+  int gearToAngle[GEAR_ANGLE_ARR_MAX];
+  int currGear = 0; // 0-indexed in code, presented to user as 1-indexed
   
   // Start by finding smallest mechanical angle of servo
   const float FIND_MIN_WAIT_SEC = 1.5f; // must wait for servo to rotate all the way
@@ -79,6 +85,8 @@ void loop() {
   // Feedback isn't super-accurate, but it's a good place to start
   int startAngle = getServoFeedback();
   Serial.println("Starting at angle " + String(startAngle));
+  // This is a good angle to switch to first gear
+  gearToAngle[currGear++] = startAngle;
 
   unsigned long startTimeMs = millis();
   double lastShift = -999.0; // Equivalent to "never shifted"
@@ -98,8 +106,16 @@ void loop() {
     float gyroVelocity = getGyroVelocityZ();
     // Make sure cooldown has passed before detecting new shifts
     if ((lastShift + SHIFT_COOLDOWN_SEC) < elapsedSec && abs(gyroVelocity) >= SHIFT_DETECT_THRESHOLD) {
-      Serial.println("Shift detected at servo angle " + String(servoAngle) + " from gyro velocity " + String(gyroVelocity));
+      Serial.println("Shift detected for gear " + String(currGear+1) + " at servo angle "
+        + String(servoAngle) + " from gyro velocity " + String(gyroVelocity));
       lastShift = elapsedSec;
+
+      if (currGear >= GEAR_ANGLE_ARR_MAX) {
+        Serial.println("Gear ignored; exceeded array storage");
+        currGear++;
+      } else {
+        gearToAngle[currGear++] = servoAngle;
+      }
     }
 
     // If servo isn't moving anymore, we reached its mechanical limit
@@ -116,10 +132,9 @@ void loop() {
       maxServoInputAngle = servoAngle;
       lastMaxHitSec = elapsedSec;
     }
-    // TODO: replace with actual shift count metric
     // Make sure at least one shift is detected before we give up
     // Feedback servo angle tends to be sticky at low range of angles before first shift
-    if (lastShift >= 0.0f && elapsedSec - lastMaxHitSec >= MAX_TIMEOUT_THRESHOLD_SECONDS) {
+    if (currGear > 1 && elapsedSec - lastMaxHitSec >= MAX_TIMEOUT_THRESHOLD_SECONDS) {
       Serial.println("Detected max servo angle at " + String(maxServoInputAngle));
       break;
     }
@@ -128,7 +143,15 @@ void loop() {
       break;
     }
   }
-  delay(10000000);
+  Serial.println("Calibration complete! " + String(currGear) + " gears detected.");
+  Serial.println("------------------");
+  for(int i = 0; i < min(currGear, GEAR_ANGLE_ARR_MAX); i++) {
+    // One-index for the user
+    Serial.println(String(i+1) + "\t" + gearToAngle[i]);
+  }
+  Serial.println("------------------");
+
+  delay(1000000000);
 }
 
 // Return current gyro Z velocity in degrees/second
