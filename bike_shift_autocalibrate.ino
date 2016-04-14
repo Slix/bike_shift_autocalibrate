@@ -68,7 +68,7 @@ void loop() {
 
   // Once we haven't seen new maximums for this many seconds, give up finding more gears
   // Servo likely hit physical max angle
-  const float MAX_TIMEOUT_THRESHOLD_SECONDS = 2.0f;
+  const float MAX_TIMEOUT_THRESHOLD_SECONDS = 2.5f;
 
   // Max number of gears our program will store
   const int GEAR_ANGLE_ARR_MAX = 15;
