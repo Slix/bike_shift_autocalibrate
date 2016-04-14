@@ -151,7 +151,43 @@ void loop() {
   }
   Serial.println("------------------");
 
-  delay(1000000000);
+  int maxGear = min(currGear, GEAR_ANGLE_ARR_MAX) - 1;
+  // Change to "real" last gear at correct servo angle
+  setServoAngle(gearToAngle[maxGear]);
+  currGear = maxGear;
+
+  while (1) {
+    Serial.println("Select a gear (1-" + String(maxGear+1) + ") ^^^\n");
+
+    // Loop until user actually types in a number
+    int requestedGear;
+    while (1) {
+      requestedGear = Serial.parseInt() - 1;
+      if (Serial.read() != '\n') {
+        // Not actually a number requested by user
+        continue;
+      } else {
+        break;
+      }
+    }
+    if (requestedGear < 0 || requestedGear > maxGear) {
+      Serial.println("Non-existent gear");
+      continue;
+    }
+    if (requestedGear == currGear) {
+      Serial.println("Already at that gear");
+      continue;
+    }
+
+    changeGear(requestedGear, currGear, gearToAngle);
+    currGear = requestedGear;
+    Serial.println("Changed gear to " + String(currGear+1));
+  }
+}
+
+void changeGear(int toGear, int fromGear, int gearToAngle[]) {
+  int finalAngle = gearToAngle[toGear];
+  setServoAngle(finalAngle);
 }
 
 // Return current gyro Z velocity in degrees/second
