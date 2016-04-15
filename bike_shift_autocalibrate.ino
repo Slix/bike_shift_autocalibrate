@@ -187,6 +187,21 @@ void loop() {
 
 void changeGear(int toGear, int fromGear, int gearToAngle[]) {
   int finalAngle = gearToAngle[toGear];
+
+  // Overshoot for better gear shifting
+  const int ANGLE_OVERSHOOT_BY = 6;
+  const float HOLD_OVERSHOOT_SEC = 1.0; // how long to hold overshoot before going back
+
+  int direction;
+  if (fromGear < toGear) {
+    direction = 1;
+  } else {
+    direction = -1;
+  }
+  int overshootAngle = finalAngle + (ANGLE_OVERSHOOT_BY * direction);
+
+  setServoAngle(overshootAngle);
+  delay(HOLD_OVERSHOOT_SEC * 1000);
   setServoAngle(finalAngle);
 }
 
