@@ -157,7 +157,7 @@ void loop() {
   currGear = maxGear;
 
   while (1) {
-    Serial.println("Select a gear (1-" + String(maxGear+1) + ") ^^^\n");
+    Serial.println("Select a gear (1-" + String(maxGear+1) + ") ^^^ or -1 to restart");
 
     // Loop until user actually types in a number
     int requestedGear;
@@ -169,6 +169,10 @@ void loop() {
       } else {
         break;
       }
+    }
+    if (requestedGear == -2) {
+      // Restart calibration
+      break;
     }
     if (requestedGear < 0 || requestedGear > maxGear) {
       Serial.println("Non-existent gear");
