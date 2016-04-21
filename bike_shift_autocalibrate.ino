@@ -64,7 +64,7 @@ void loop() {
   const float SHIFT_COOLDOWN_SEC = 1.0f;
 
   const int ABSOLUTE_MIN_SERVO_ANGLE = 0;
-  const int ABSOLUTE_MAX_SERVO_ANGLE = 140; // Really 180, but we don't want to stress our servo in case of an error
+  const int ABSOLUTE_MAX_SERVO_ANGLE = 180;
 
   // Once we haven't seen new maximums for this many seconds, give up finding more gears
   // Servo likely hit physical max angle
