@@ -151,6 +151,22 @@ void loop() {
   }
   Serial.println("------------------");
 
+  // Experiment: use min/max gears to equally spread gears to find ideal resting angles
+  Serial.println("Min angle reported: " + String(startAngle));
+  Serial.println("Max angle reported: " + String(maxFeedbackAngle));
+  Serial.println("Max angle actually written: " + String(maxServoInputAngle));
+  int minAngleIdeal = startAngle;
+  int maxAngleIdeal = maxFeedbackAngle;
+  int numGears = min(currGear, GEAR_ANGLE_ARR_MAX);
+  float intervalBetweenGears = float(maxAngleIdeal - minAngleIdeal) / numGears;
+  for(int i = 0; i < numGears; i++) {
+    // One-index for the user
+    int idealAngle = int(round(minAngleIdeal + (intervalBetweenGears * i)));
+    Serial.println(String(i+1) + "\t" + idealAngle);
+  }
+
+  Serial.println("------------------");
+
   int maxGear = min(currGear, GEAR_ANGLE_ARR_MAX) - 1;
   // Change to "real" last gear at correct servo angle
   setServoAngle(gearToAngle[maxGear]);
